@@ -12,8 +12,8 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server ./cmd/app
 
-# Download golang-migrate
-RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+# Download golang-migrate (pinned to v4.17.1 for Go 1.23 compatibility)
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.17.1
 
 # Final stage
 FROM alpine:3.19
