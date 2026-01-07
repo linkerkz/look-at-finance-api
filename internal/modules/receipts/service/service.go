@@ -67,8 +67,8 @@ func (s *Service) Scan(ctx context.Context, userID string, req models.ScanReceip
 		return nil, err
 	}
 
-	// Check if receipt already exists
-	exists, err := s.repo.ExistsByFiscalID(ctx, parsed.FiscalID)
+	// Check if receipt already exists for this user
+	exists, err := s.repo.ExistsByFiscalID(ctx, userID, parsed.FiscalID)
 	if err != nil {
 		return nil, err
 	}

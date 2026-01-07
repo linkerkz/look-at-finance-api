@@ -31,9 +31,9 @@ func (r *Repository) Create(ctx context.Context, receipt *models.Receipt) error 
 	}
 	defer tx.Rollback(ctx)
 
-	// Check for duplicate fiscal ID
+	// Check for duplicate fiscal ID for this user
 	var exists bool
-	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM receipts WHERE fiscal_id = $1)", receipt.FiscalID).Scan(&exists)
+	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM receipts WHERE fiscal_id = $1 AND user_id = $2)", receipt.FiscalID, receipt.UserID).Scan(&exists)
 	if err != nil {
 		return err
 	}
@@ -266,9 +266,9 @@ func (r *Repository) List(ctx context.Context, userID string, req models.ListRec
 	return result, total, rows.Err()
 }
 
-func (r *Repository) ExistsByFiscalID(ctx context.Context, fiscalID string) (bool, error) {
+func (r *Repository) ExistsByFiscalID(ctx context.Context, userID string, fiscalID string) (bool, error) {
 	var exists bool
-	err := r.db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM receipts WHERE fiscal_id = $1)", fiscalID).Scan(&exists)
+	err := r.db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM receipts WHERE fiscal_id = $1 AND user_id = $2)", fiscalID, userID).Scan(&exists)
 	return exists, err
 }
 
