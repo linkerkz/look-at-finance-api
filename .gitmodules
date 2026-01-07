@@ -1,0 +1,6 @@
+[submodule "look-at-finance-spec"]
+	path = look-at-finance-spec
+	url = https://github.com/linkerkz/look-at-finance-spec.git
+[submodule "docs/api"]
+	path = docs/api
+	url = https://github.com/linkerkz/look-at-finance-spec.git
