@@ -1,0 +1,6 @@
+docs/
+.git/
+.gitmodules
+.gitignore
+*.md
+.env*
