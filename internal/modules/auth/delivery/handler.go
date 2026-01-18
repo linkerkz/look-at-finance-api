@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/models"
+	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/dto"
 	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/service"
 	"github.com/lukivan8/look-at-finance-api/internal/shared/logger"
 	"github.com/lukivan8/look-at-finance-api/internal/shared/middleware"
@@ -25,7 +25,7 @@ func NewHandler(service *service.Service, log *logger.Logger) *Handler {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	var req models.RegisterRequest
+	var req dto.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.BadRequest(w, "invalid request body")
 		return
@@ -51,7 +51,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	var req models.LoginRequest
+	var req dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.BadRequest(w, "invalid request body")
 		return
@@ -77,7 +77,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
-	var req models.RefreshRequest
+	var req dto.RefreshRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.BadRequest(w, "invalid request body")
 		return
@@ -119,7 +119,7 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, result)
 }
 
-func validateRegisterRequest(req models.RegisterRequest) error {
+func validateRegisterRequest(req dto.RegisterRequest) error {
 	if req.Email == "" {
 		return errors.New("email is required")
 	}

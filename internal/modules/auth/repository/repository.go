@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/models"
+	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/dto"
 	"github.com/lukivan8/look-at-finance-api/internal/shared/database"
 )
 
@@ -23,7 +23,7 @@ func New(db *database.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
+func (r *Repository) CreateUser(ctx context.Context, user *dto.User) error {
 	query := `
 		INSERT INTO users (email, password_hash, name)
 		VALUES ($1, $2, $3)
@@ -33,13 +33,13 @@ func (r *Repository) CreateUser(ctx context.Context, user *models.User) error {
 		Scan(&user.ID, &user.CreatedAt)
 }
 
-func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*dto.User, error) {
 	query := `
 		SELECT id, email, password_hash, name, created_at
 		FROM users
 		WHERE email = $1
 	`
-	user := &models.User{}
+	user := &dto.User{}
 	err := r.db.Pool.QueryRow(ctx, query, email).
 		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt)
 	if err != nil {
@@ -51,13 +51,13 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*models.
 	return user, nil
 }
 
-func (r *Repository) GetUserByID(ctx context.Context, id string) (*models.User, error) {
+func (r *Repository) GetUserByID(ctx context.Context, id string) (*dto.User, error) {
 	query := `
 		SELECT id, email, password_hash, name, created_at
 		FROM users
 		WHERE id = $1
 	`
-	user := &models.User{}
+	user := &dto.User{}
 	err := r.db.Pool.QueryRow(ctx, query, id).
 		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt)
 	if err != nil {
@@ -76,7 +76,7 @@ func (r *Repository) UserExistsByEmail(ctx context.Context, email string) (bool,
 	return exists, err
 }
 
-func (r *Repository) CreateRefreshToken(ctx context.Context, token *models.RefreshToken) error {
+func (r *Repository) CreateRefreshToken(ctx context.Context, token *dto.RefreshToken) error {
 	query := `
 		INSERT INTO refresh_tokens (user_id, token, expires_at)
 		VALUES ($1, $2, $3)
@@ -86,13 +86,13 @@ func (r *Repository) CreateRefreshToken(ctx context.Context, token *models.Refre
 		Scan(&token.ID, &token.CreatedAt)
 }
 
-func (r *Repository) GetRefreshToken(ctx context.Context, token string) (*models.RefreshToken, error) {
+func (r *Repository) GetRefreshToken(ctx context.Context, token string) (*dto.RefreshToken, error) {
 	query := `
 		SELECT id, user_id, token, expires_at, created_at
 		FROM refresh_tokens
 		WHERE token = $1 AND expires_at > NOW()
 	`
-	rt := &models.RefreshToken{}
+	rt := &dto.RefreshToken{}
 	err := r.db.Pool.QueryRow(ctx, query, token).
 		Scan(&rt.ID, &rt.UserID, &rt.Token, &rt.ExpiresAt, &rt.CreatedAt)
 	if err != nil {

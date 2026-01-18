@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/models"
+	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/dto"
 	"github.com/lukivan8/look-at-finance-api/internal/modules/auth/repository"
 	"github.com/lukivan8/look-at-finance-api/internal/shared/middleware"
 	"golang.org/x/crypto/bcrypt"
@@ -37,7 +37,7 @@ func New(repo *repository.Repository, jwtSecret string) *Service {
 	}
 }
 
-func (s *Service) Register(ctx context.Context, req models.RegisterRequest) (*models.AuthResponse, error) {
+func (s *Service) Register(ctx context.Context, req dto.RegisterRequest) (*dto.AuthResponse, error) {
 	exists, err := s.repo.UserExistsByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (s *Service) Register(ctx context.Context, req models.RegisterRequest) (*mo
 		return nil, err
 	}
 
-	user := &models.User{
+	user := &dto.User{
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
 		Name:         req.Name,
@@ -64,7 +64,7 @@ func (s *Service) Register(ctx context.Context, req models.RegisterRequest) (*mo
 	return s.generateAuthResponse(ctx, user)
 }
 
-func (s *Service) Login(ctx context.Context, req models.LoginRequest) (*models.AuthResponse, error) {
+func (s *Service) Login(ctx context.Context, req dto.LoginRequest) (*dto.AuthResponse, error) {
 	user, err := s.repo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
@@ -80,7 +80,7 @@ func (s *Service) Login(ctx context.Context, req models.LoginRequest) (*models.A
 	return s.generateAuthResponse(ctx, user)
 }
 
-func (s *Service) RefreshTokens(ctx context.Context, refreshToken string) (*models.TokenResponse, error) {
+func (s *Service) RefreshTokens(ctx context.Context, refreshToken string) (*dto.TokenResponse, error) {
 	token, err := s.repo.GetRefreshToken(ctx, refreshToken)
 	if err != nil {
 		if errors.Is(err, repository.ErrTokenNotFound) {
@@ -108,13 +108,13 @@ func (s *Service) RefreshTokens(ctx context.Context, refreshToken string) (*mode
 		return nil, err
 	}
 
-	return &models.TokenResponse{
+	return &dto.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: newRefreshToken,
 	}, nil
 }
 
-func (s *Service) GetCurrentUser(ctx context.Context, userID string) (*models.UserResponse, error) {
+func (s *Service) GetCurrentUser(ctx context.Context, userID string) (*dto.UserResponse, error) {
 	user, err := s.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func (s *Service) GetCurrentUser(ctx context.Context, userID string) (*models.Us
 	return &resp, nil
 }
 
-func (s *Service) generateAuthResponse(ctx context.Context, user *models.User) (*models.AuthResponse, error) {
+func (s *Service) generateAuthResponse(ctx context.Context, user *dto.User) (*dto.AuthResponse, error) {
 	accessToken, err := s.generateAccessToken(user)
 	if err != nil {
 		return nil, err
@@ -135,14 +135,14 @@ func (s *Service) generateAuthResponse(ctx context.Context, user *models.User) (
 		return nil, err
 	}
 
-	return &models.AuthResponse{
+	return &dto.AuthResponse{
 		User:         user.ToResponse(),
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
 }
 
-func (s *Service) generateAccessToken(user *models.User) (string, error) {
+func (s *Service) generateAccessToken(user *dto.User) (string, error) {
 	claims := middleware.Claims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -162,7 +162,7 @@ func (s *Service) createRefreshToken(ctx context.Context, userID string) (string
 	}
 	tokenString := hex.EncodeToString(tokenBytes)
 
-	refreshToken := &models.RefreshToken{
+	refreshToken := &dto.RefreshToken{
 		UserID:    userID,
 		Token:     tokenString,
 		ExpiresAt: time.Now().Add(refreshTokenDuration),
